@@ -21,6 +21,7 @@
 #define LG_OFSTR std::LG_CZ(of, str, eam)
 #endif
 
+// check prefix
 bool has_prefix(const std::string& __s, const std::string& __x)
 {
     std::string::const_iterator i=__s.begin(), j=__x.begin();
@@ -33,6 +34,7 @@ bool has_prefix(const std::string& __s, const std::string& __x)
     return false;
 }
 
+// check suffix
 bool has_suffix(const std::string& __s, const std::string& __x)
 {
     std::string::const_iterator i=__s.end(), j=__x.end();
