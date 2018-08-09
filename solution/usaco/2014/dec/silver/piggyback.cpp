@@ -1,61 +1,71 @@
-#include <cstdio>
+#if LUOGU
+#include <iostream>
+using std::cin;
+using std::cout;
+#else
+#include <fstream>
+std::ifstream fin("piggyback.in");
+std::ofstream fout("piggyback.out");
+#define cin fin
+#define cout fout
+#endif
+#include <algorithm>
 #include <queue>
 #include <vector>
-using namespace std;
 
-typedef long long ll;
+typedef long long llong;
+llong b, e, p, n, m;
+std::vector<std::vector<llong> > g;
 
-vector<ll> d(ll st, const vector<vector<ll> >& e)
+std::vector<llong> dist(llong s)
 {
-	vector<ll> d(e.size(), -1);
-	queue<ll> q;
-	ll i, x, y;
-	
-	d[st]=0;
-	q.push(st);
-	
-	while (!q.empty())
-	{
-		x=q.front(); q.pop();
-		
-		for (i=0; i<e[x].size(); ++i)
-		{
-			y=e[x][i];
-			
-			if (d[y]==-1)
-			{
-				d[y]=d[x]+1;
-				q.push(y);
-			}
-		}
-	}
+     std::vector<llong> d;
+     std::queue<llong> q;
+     d.resize(n, -1);
+     q.push(s);
+     d[s]=0;
+
+     while (!q.empty())
+     {
+         llong x=q.front();
+         q.pop();
+
+         for (llong i=0; i<(llong)g[x].size(); ++i)
+         {
+             llong y=g[x][i];
+
+             if (d[y]==-1)
+             {
+                 d[y]=d[x]+1;
+                 q.push(y);
+             }
+         }
+     }
+
+     return d;
 }
 
 int main()
 {
-	freopen("1.in", "r", stdin);
-	ll b, e, p, n, m;
-	ll i, x, y;
-	ll ans=ll(1000)*1000*1000*1000;
-	scanf("%lld%lld%lld%lld%lld", &b, &e, &p, &n, &m);
-	vector<vector<ll> > ge(n, vector<ll>());
-	
-	for (i=0; i<m; ++i)
-	{
-		scanf("%lld%lld", &x, &y);
-		--x; --y;
-		
-		ge[x].push_back(y);
-		ge[y].push_back(x);
-	}
-	
-	vector<ll> d0=d(0, ge);
-	vector<ll> d1=d(1, ge);
-	vector<ll> dn=d(n-1, ge);
-	
-	for (i=0; i<m; ++i)
-		ans=min(ans, d0[i]*b+d1[i]*e+dn[i]*p);
-	
-	printf("%lld\n", ans);
-	return 0;
+    llong i, u, v, minv=1<<30;
+    cin >> b >> e >> p >> n >> m;
+    g.resize(n, std::vector<llong>());
+
+    for (i=0; i<m; ++i)
+    {
+        cin >> u >> v;
+        --u; --v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+
+    std::vector<llong> d0=dist(0);
+    std::vector<llong> d1=dist(1);
+    std::vector<llong> dn=dist(n-1);
+
+    for (i=0; i<n; ++i)
+        minv=std::min(minv, d0[i]*b+d1[i]*e+dn[i]*p);
+
+    cout << minv << '\n';
+    return 0;
 }
