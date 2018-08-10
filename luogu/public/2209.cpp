@@ -1,6 +1,9 @@
+#include <algorithm>
 #include <iostream>
 #define MAXN 50000
 using namespace std;
+
+using llong = long long;
 
 struct node
 {
@@ -18,7 +21,7 @@ int s[MAXN], nxt[MAXN];
 
 int main()
 {
-	int i, size = 0;
+	int i, siz = 0;
 	cin >> n >> maxv >> cur >> dist;
 
 	for (i = 0; i < n; ++i)
@@ -34,26 +37,29 @@ int main()
 	}
 
 	cur -= a[0].pos;
-	long long cost = 0;
-	for (int i = 0; i < n; i++)
+	llong cost = 0;
+
+	for (i = 0; i < n; ++i)
 	{
 		if (cur < 0)
 		{
-			printf("-1\n");
+			cout << "-1" << endl;
 			return 0;
 		}
-		int gasNeeded = min(maxv, (nxt[i] == -1 ? dist :
-a[nxt[i]].pos) - a[i].pos);
-		if (gasNeeded > cur)
+
+		int v = min(maxv, (nxt[i] == -1 ? dist : a[nxt[i]].pos) - a[i].pos);
+
+		if (v > cur)
 		{
-			cost += (long long) (gasNeeded - cur) * (long long) a[i].cost;
-			cur = gasNeeded;
+			cost += llong(v - cur) * llong(a[i].cost);
+			cur = v;
 		}
+
 		cur -= (i == n-1 ? dist : a[i+1].pos) - a[i].pos;
 	}
 
-	if (cur < 0) printf("-1\n");
-	else printf("%lld\n", cost);
+	if (cur < 0) cout << "-1" << endl;
+	else cout << cost << endl;
 
 	return 0;
 }
