@@ -1,8 +1,10 @@
-#include <cstdio>
+#include <iostream>
 
-int main() {
-	int a, b;
-	scanf("%d%d", &a, &b);
-	printf("%d\n", a+b);
-	return 0;
+int main()
+{
+  int a, b;
+  std::cin >> a >> b;
+  std::cout << (a + b) << '\n';
+
+  return 0;
 }
